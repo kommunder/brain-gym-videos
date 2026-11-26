@@ -1,0 +1,48 @@
+name: YouTube tools
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "search | video | comments | channel | transcript"
+        required: true
+      arg:
+        description: "query / video URL or id / @handle"
+        required: true
+      options:
+        description: "optional key=value pairs separated by spaces (max=25 order=viewCount lang=en region=US after=2026-01-01T00:00:00Z sort=views)"
+        required: false
+        default: ""
+permissions:
+  contents: write
+concurrency:
+  group: yt-tools
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install transcript helper
+        if: ${{ github.event.inputs.command == 'transcript' }}
+        run: pip install youtube-transcript-api
+      - name: Run
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          CMD: ${{ github.event.inputs.command }}
+          ARG: ${{ github.event.inputs.arg }}
+          OPTS: ${{ github.event.inputs.options }}
+        run: |
+          set +e
+          python3 scripts/yt.py "$CMD" "$ARG" $OPTS
+          true
+      - name: Save result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/yt/result.json
+          git diff --cached --quiet || git commit -m "yt-tools result: ${{ github.event.inputs.command }}"
+          git pull --rebase -q || true
+          git push
