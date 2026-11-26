@@ -1,0 +1,10 @@
+{
+ "request": {
+  "command": "channel",
+  "arg": "@kommunder",
+  "options": {},
+  "at": "2026-11-26T07:26:55.955003Z",
+  "quotaUnits": 0
+ },
+ "error": "YOUTUBE_API_KEY is not set in repository secrets"
+}
