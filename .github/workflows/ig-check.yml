@@ -1,0 +1,13 @@
+name: Instagram check
+on:
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Who is the token
+        env:
+          T: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$T" ]; then echo "NO TOKEN SECRET"; exit 0; fi
+          curl -s "https://graph.instagram.com/v23.0/me?fields=user_id,username,account_type,followers_count,media_count&access_token=$T" | python3 -c "import sys,json;d=json.load(sys.stdin);print(json.dumps({k:v for k,v in d.items()},ensure_ascii=False))"
