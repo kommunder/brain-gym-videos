@@ -110,11 +110,11 @@ CMDS = {"search": cmd_search, "video": cmd_video, "comments": cmd_comments, "cha
 if __name__ == "__main__":
     if len(sys.argv) < 3 or sys.argv[1] not in CMDS:
         sys.exit("usage: yt.py {%s} <arg> [key=value ...]" % "|".join(CMDS))
-    if not KEY and sys.argv[1] != "transcript":
-        sys.exit(json.dumps({"error": "YOUTUBE_API_KEY is not set"}))
     cmd, arg = sys.argv[1], sys.argv[2]
     opts = dict(x.split("=", 1) for x in sys.argv[3:] if "=" in x)
     try:
+        if not KEY and cmd != "transcript":
+            raise SystemExit(json.dumps({"error": "YOUTUBE_API_KEY is not set in repository secrets"}))
         result = CMDS[cmd](arg, opts)
     except SystemExit as e:
         result = json.loads(str(e)) if str(e).startswith("{") else {"error": str(e)}
